@@ -1530,7 +1530,7 @@
     .admin-main { padding: 20px; }
   }
   
-    @media (max-width: 640px) {
+      @media (max-width: 640px) {
     section { padding: 70px 0; }
     .nav-links { display: none; }
     .nav-links.open {
@@ -1547,18 +1547,42 @@
     .hero { padding-top: 100px; }
     .hero-stats { gap: 15px; flex-wrap: wrap; }
     
-    /* --- FIX 1: Make all floating elements visible and stack nicely on mobile --- */
+    /* --- Scattered Floating Elements on Mobile --- */
+    .hero-visual {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-top: 20px;
+    }
     .hero-floating-1, .hero-floating-2, .hero-floating-3, .hero-floating-4, .hero-floating-5 {
       display: flex;
       position: relative;
       top: auto !important;
       left: auto !important;
       right: auto !important;
-      margin: 8px auto; /* Centers them */
       transform: none !important;
-      animation: none !important; /* Stops floating animation to save space */
+      animation: floatCardLeft 6s ease-in-out infinite; 
       width: fit-content;
     }
+    /* Stagger them left and right to look organic */
+    .hero-floating-1 { align-self: flex-start; margin-left: 10%; }
+    .hero-floating-2 { align-self: flex-end; margin-right: 5%; animation-name: floatCardRight; }
+    .hero-floating-3 { align-self: center; margin-left: 15%; }
+    .hero-floating-4 { align-self: flex-start; margin-left: 25%; animation-name: floatCardRight; }
+    .hero-floating-5 { align-self: flex-end; margin-right: 15%; }
+    
+    /* --- Prevent section titles from being cut off --- */
+    .section-head h2 { 
+      white-space: normal !important; 
+    }
+    
+    .filter-bar { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+    .filter-btn { white-space: nowrap; }
+    .projects-grid { grid-template-columns: 1fr; }
+    .admin-table { font-size: 12px; }
+    .admin-table th, .admin-table td { padding: 10px 12px; }
+  }
     
     /* --- FIX 2: Prevent section titles from being cut off --- */
     .section-head h2 { 
