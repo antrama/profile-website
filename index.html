@@ -1530,7 +1530,7 @@
     .admin-main { padding: 20px; }
   }
   
-  @media (max-width: 640px) {
+    @media (max-width: 640px) {
     section { padding: 70px 0; }
     .nav-links { display: none; }
     .nav-links.open {
@@ -1546,7 +1546,25 @@
     .mobile-toggle { display: grid; place-items: center; }
     .hero { padding-top: 100px; }
     .hero-stats { gap: 15px; flex-wrap: wrap; }
-    .hero-floating-1, .hero-floating-2 { display: none; }
+    
+    /* --- FIX 1: Make all floating elements visible and stack nicely on mobile --- */
+    .hero-floating-1, .hero-floating-2, .hero-floating-3, .hero-floating-4, .hero-floating-5 {
+      display: flex;
+      position: relative;
+      top: auto !important;
+      left: auto !important;
+      right: auto !important;
+      margin: 8px auto; /* Centers them */
+      transform: none !important;
+      animation: none !important; /* Stops floating animation to save space */
+      width: fit-content;
+    }
+    
+    /* --- FIX 2: Prevent section titles from being cut off --- */
+    .section-head h2 { 
+      white-space: normal !important; /* Forces text to wrap to the next line */
+    }
+    
     .filter-bar { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
     .filter-btn { white-space: nowrap; }
     .projects-grid { grid-template-columns: 1fr; }
