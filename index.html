@@ -1889,6 +1889,7 @@ const defaultData = {
     facebook: "",
     tiktok: "",
     threads: "",
+    whatsapp: "",
     phone: "+62 882 177 842 80",
     location: "Indonesia",
     logo: "", // New: Base64 Logo
@@ -1984,6 +1985,7 @@ function loadData() {
     if (!parsed.bio.logo) parsed.bio.logo = "";
     if (!parsed.bio.profileImage) parsed.bio.profileImage = "";
     if (!parsed.bio.cvFile) parsed.bio.cvFile = "";
+    if (!parsed.bio.whatsapp) parsed.bio.whatsapp = "";
     if (!parsed.experience) parsed.experience = defaultData.experience;
     if (!parsed.education) parsed.education = defaultData.education;
     if (!parsed.projects) parsed.projects = defaultData.projects;
@@ -2331,8 +2333,8 @@ function renderContact() {
       <div class="contact-link-icon"><i class="fa-brands fa-tiktok"></i></div>
       <div><div class="label">TikTok</div><div class="value">Follow Me</div></div>
     </a>` : ''}
-    ${b.whatsapp ? `
-    <a href="${b.whatsapp.startsWith('http') ? b.whatsapp : 'https://wa.me/' + b.whatsapp.replace(/[^0-9]/g, '')}" target="_blank" rel="noopener" class="contact-link">
+        ${b.whatsapp ? `
+    <a href="${b.whatsapp.startsWith('http') ? b.whatsapp : 'https://wa.me/' + b.whatsapp.replace(/[^0-9]/g, '').replace(/^0/, '62')}" target="_blank" rel="noopener" class="contact-link">
       <div class="contact-link-icon"><i class="fa-brands fa-whatsapp"></i></div>
       <div><div class="label">WhatsApp</div><div class="value">Chat Me</div></div>
     </a>` : ''}
@@ -2347,6 +2349,7 @@ function renderContact() {
     ${b.facebook ? `<a href="${b.facebook}" target="_blank" rel="noopener" aria-label="Facebook"><i class="fa-brands fa-facebook"></i></a>` : ''}
     ${b.tiktok ? `<a href="${b.tiktok}" target="_blank" rel="noopener" aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a>` : ''}
     ${b.threads ? `<a href="${b.threads}" target="_blank" rel="noopener" aria-label="Threads"><i class="fa-brands fa-threads"></i></a>` : ''}
+    ${b.whatsapp ? `<a href="${b.whatsapp.startsWith('http') ? b.whatsapp : 'https://wa.me/' + b.whatsapp.replace(/[^0-9]/g, '').replace(/^0/, '62')}" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>` : ''}
     <a href="mailto:${b.email}" aria-label="Email"><i class="fa-solid fa-envelope"></i></a>
   `;
 }
@@ -3041,7 +3044,7 @@ function adminBio() {
         </div>
         <div class="form-group">
          <label>WhatsApp Number / Link</label>
-         <input type="url" id="bioWhatsapp" value="${escapeAttr(b.whatsapp || '')}">
+         <input type="text" id="bioWhatsapp" value="${escapeAttr(b.whatsapp || '')}" placeholder="e.g., 6281234567890">
         </div>
       </div>
       <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
