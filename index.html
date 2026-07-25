@@ -1560,6 +1560,8 @@
   ::-webkit-scrollbar-thumb { background: var(--bg-elevated); border-radius: 10px; border: 2px solid var(--bg); }
   ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 </style>
+
+<link rel="icon" id="dynamicFavicon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='25' fill='%2322d3ee'/><text x='50%' y='68%' font-size='50' font-weight='800' font-family='sans-serif' text-anchor='middle' fill='%23050811'>AP</text></svg>">
 </head>
 <body>
 
@@ -2103,8 +2105,11 @@ function renderPublic() {
 
 function renderLogos() {
   const navLogo = document.getElementById('navLogoMark');
-  if (DB.bio.logo) {
+  const favicon = document.getElementById('dynamicFavicon');
+  
+  if (DB.bio && DB.bio.logo) {
     navLogo.innerHTML = `<img src="${DB.bio.logo}" alt="Logo">`;
+    if (favicon) favicon.href = DB.bio.logo; // <-- Mengubah favicon di tab browser sesuai logo dari Firebase
   } else {
     navLogo.innerText = 'AP';
   }
