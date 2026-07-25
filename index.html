@@ -1,5 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
+<!-- FIREBASE SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1845,6 +1848,22 @@
 /* ============================================================
    DATA LAYER (localStorage with Auto-Healing & Validation)
    ============================================================ */
+   /* ============================================================
+   FIREBASE CONFIGURATION
+   ============================================================ */
+const firebaseConfig = {
+  apiKey: "AIzaSyC54A46KF-LQrfHwqcO7G3GdKmucYuWUkc",
+  authDomain: "profile-website-app.firebaseapp.com",
+  projectId: "profile-website-app",
+  storageBucket: "profile-website-app.firebasestorage.app",
+  messagingSenderId: "476850494633",
+  appId: "1:476850494633:web:16a2db90dff94d282f9db8",
+  measurementId: "G-EEKWZ0B3M2"
+};
+
+// Inisialisasi Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 const DB_KEY = 'appp_portfolio_db_v5'; // Updated version key to v4 for new media fields
 const AUTH_KEY = 'appp_admin_auth';
 const ADMIN_PASSWORD = 'aprillian2024';
@@ -1972,8 +1991,34 @@ function loadData() {
   }
 }
 
-function saveData() {
-  localStorage.setItem(DB_KEY, JSON.stringify(DB));
+// Ganti fungsi saveData() dengan versi Firebase
+async function saveData() {
+  try {
+    await db.collection('portfolio').doc('mainData').set(DB);
+    localStorage.setItem(DB_KEY, JSON.stringify(DB));
+    toast('Data saved to Cloud Database!', 'success');
+  } catch (error) {
+    console.error("Firebase save error:", error);
+    toast('Error saving to Cloud Database.', 'error');
+  }
+}
+
+// Tambahkan fungsi loadDataFromFirebase() tepat di bawahnya
+async function loadDataFromFirebase() {
+  try {
+    const doc = await db.collection('portfolio').doc('mainData').get();
+    if (doc.exists) {
+      DB = doc.data();
+    } else {
+      DB = loadData();
+      saveData();
+    }
+    renderPublic();
+  } catch (error) {
+    console.error("Firebase load error:", error);
+    DB = loadData();
+    renderPublic();
+  }
 }
 
 function genId(prefix) {
@@ -3177,7 +3222,7 @@ function escapeHtml(str) { return String(str||'').replace(/[&<>"']/g, c=>({'&':'
 function escapeAttr(str) { return String(str||'').replace(/"/g, '&quot;'); }
 
 /* Init */
-document.addEventListener('DOMContentLoaded', () => { initParticles(); initPublicInteractions(); router(); });
+document.addEventListener('DOMContentLoaded', () => { initParticles(); initPublicInteractions(); router(); loadDataFromFirebase(); });
 </script>
 </body>
 </html>
