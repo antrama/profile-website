@@ -1,0 +1,19 @@
+backend:
+  name: github
+  repo: antrama/profile-website # Ganti dengan username/repo kamu
+  branch: main # Atau master, sesuaikan dengan nama branch utama repo-mu
+
+media_folder: "assets/images" # Folder tempat menyimpan foto yang di-upload lewat admin
+public_folder: "/assets/images"
+
+collections:
+  - name: "profile"
+    label: "Profile Info"
+    files:
+      - file: "content/profile.json" # File data yang akan di-edit lewat admin
+        label: "Profile Data"
+        name: "profile_data"
+        fields:
+          - { label: "Name", name: "name", widget: "string" }
+          - { label: "Bio", name: "bio", widget: "text" }
+          - { label: "Profile Picture", name: "photo", widget: "image" }
