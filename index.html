@@ -2331,6 +2331,11 @@ function renderContact() {
       <div class="contact-link-icon"><i class="fa-brands fa-tiktok"></i></div>
       <div><div class="label">TikTok</div><div class="value">Follow Me</div></div>
     </a>` : ''}
+    ${b.whatsapp ? `
+    <a href="${b.whatsapp.startsWith('http') ? b.whatsapp : 'https://wa.me/' + b.whatsapp.replace(/[^0-9]/g, '')}" target="_blank" rel="noopener" class="contact-link">
+      <div class="contact-link-icon"><i class="fa-brands fa-whatsapp"></i></div>
+      <div><div class="label">WhatsApp</div><div class="value">Chat Me</div></div>
+    </a>` : ''}
   `;
   
   const footer = document.getElementById('footerSocial');
@@ -3034,6 +3039,10 @@ function adminBio() {
           <label>Threads URL</label>
           <input type="url" id="bioThreads" value="${escapeAttr(b.threads || '')}">
         </div>
+        <div class="form-group">
+         <label>WhatsApp Number / Link</label>
+         <input type="url" id="bioWhatsapp" value="${escapeAttr(b.whatsapp || '')}">
+        </div>
       </div>
       <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
         <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Save All Changes</button>
@@ -3082,6 +3091,7 @@ function bindAdminActions() {
       DB.bio.facebook = document.getElementById('bioFacebook').value.trim();
       DB.bio.tiktok = document.getElementById('bioTiktok').value.trim();
       DB.bio.threads = document.getElementById('bioThreads').value.trim();
+      DB.bio.whatsapp = document.getElementById('bioWhatsapp').value.trim();
       saveData();
       renderLogos();
       toast('Bio, Media & Links saved successfully!', 'success');
