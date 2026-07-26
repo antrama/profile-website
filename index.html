@@ -713,7 +713,7 @@
     gap: 24px;
     justify-content: center;
   }
-  .project-card {
+ .project-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
@@ -722,6 +722,8 @@
     display: flex;
     flex-direction: column;
     position: relative;
+    flex: 0 1 380px; /* Prevents card from growing larger than 380px */
+    width: 100%; /* Allows it to shrink on small mobile screens */
   }
   .project-card:hover {
     border-color: var(--border-strong);
