@@ -3,6 +3,7 @@
 <!-- FIREBASE SDKs -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -301,7 +302,7 @@
   
   .hero h1 {
     font-family: var(--font-display);
-    font-size: clamp(32px, 4.5vw, 52px); /* Reduced from 40px, 6vw, 68px */
+    font-size: clamp(32px, 4.5vw, 52px);
     font-weight: 800;
     line-height: 1.05;
     letter-spacing: -0.03em;
@@ -572,17 +573,7 @@
   .about-img-container {
     width: 100%;
     max-width: 360px; 
-    margin: 0 auto; /* Centers the image in its column */
-    position: relative;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    border: 1px solid var(--border-strong);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
-    aspect-ratio: 4/5;
-    background: var(--bg-card);
-  }
-  .about-img-container {
-    width: 100%;
+    margin: 0 auto;
     position: relative;
     border-radius: var(--radius-lg);
     overflow: hidden;
@@ -708,12 +699,12 @@
   }
   
   .projects-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 380px));
+    display: flex;
+    flex-wrap: wrap;
     gap: 24px;
     justify-content: center;
   }
- .project-card {
+  .project-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
@@ -722,8 +713,8 @@
     display: flex;
     flex-direction: column;
     position: relative;
-    flex: 0 1 380px; /* Prevents card from growing larger than 380px */
-    width: 100%; /* Allows it to shrink on small mobile screens */
+    flex: 0 1 380px;
+    width: 100%;
   }
   .project-card:hover {
     border-color: var(--border-strong);
@@ -1533,7 +1524,7 @@
     .admin-main { padding: 20px; }
   }
   
-      @media (max-width: 640px) {
+  @media (max-width: 640px) {
     section { padding: 70px 0; }
     .nav-links { display: none; }
     .nav-links.open {
@@ -1568,17 +1559,13 @@
       animation: floatCardLeft 6s ease-in-out infinite; 
       width: fit-content;
     }
-    /* Stagger them left and right to look organic */
     .hero-floating-1 { align-self: flex-start; margin-left: 100%; }
     .hero-floating-2 { align-self: flex-end; margin-right: 75%; animation-name: floatCardRight; }
     .hero-floating-3 { align-self: center; margin-left: 50%; }
     .hero-floating-4 { align-self: flex-start; margin-left: 75%; animation-name: floatCardRight; }
     .hero-floating-5 { align-self: flex-end; margin-right: 65%; }
     
-    /* --- Prevent section titles from being cut off --- */
-    .section-head h2 { 
-      white-space: normal !important; 
-    }
+    .section-head h2 { white-space: normal !important; }
     
     .filter-bar { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
     .filter-btn { white-space: nowrap; }
@@ -1595,8 +1582,6 @@
 </style>
 
 <link rel="icon" id="dynamicFavicon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='25' fill='%2322d3ee'/><text x='50%' y='68%' font-size='50' font-weight='800' font-family='sans-serif' text-anchor='middle' fill='%23050811'>AP</text></svg>">
-<!-- Tag Favicon dinamis yang akan diubah oleh JavaScript -->
-<link rel="icon" id="dynamicFavicon" href="">
 </head>
 <body>
 
@@ -1883,10 +1868,7 @@
 
 <script>
 /* ============================================================
-   DATA LAYER (localStorage with Auto-Healing & Validation)
-   ============================================================ */
-   /* ============================================================
-   FIREBASE CONFIGURATION
+   FIREBASE CONFIGURATION & INITIALIZATION
    ============================================================ */
 const firebaseConfig = {
   apiKey: "AIzaSyC54A46KF-LQrfHwqcO7G3GdKmucYuWUkc",
@@ -1898,10 +1880,10 @@ const firebaseConfig = {
   measurementId: "G-EEKWZ0B3M2"
 };
 
-// Inisialisasi Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-const DB_KEY = 'appp_portfolio_db_v5'; // Updated version key to v4 for new media fields
+const storage = firebase.storage(); // Inisialisasi Firebase Storage
+const DB_KEY = 'appp_portfolio_db_v5';
 const AUTH_KEY = 'appp_admin_auth';
 const ADMIN_PASSWORD = 'aprillian2024';
 
@@ -1925,9 +1907,9 @@ const defaultData = {
     whatsapp: "",
     phone: "+62 882 177 842 80",
     location: "Indonesia",
-    logo: "", // New: Base64 Logo
-    profileImage: "", // New: Base64 Profile Image
-    cvFile: "" // New: Base64 PDF CV
+    logo: "",
+    profileImage: "",
+    cvFile: ""
   },
   skills: [
     { id: 's1', name: 'SQL', category: 'Data & Analytics', icon: 'fa-database' },
@@ -1956,48 +1938,13 @@ const defaultData = {
     }
   ],
   experience: [
-    {
-      id: 'e1',
-      type: 'work',
-      title: 'IT and Informatics Administration Coordinator',
-      organization: 'SMP Islam Darussaadah Poncokusumo',
-      period: '2024 — 2026',
-      description: 'Coordinated IT administration, managed school database systems, and led digital academic reporting transformations.'
-    },
-    {
-      id: 'e2',
-      type: 'work',
-      title: 'Teller / Cashier',
-      organization: 'PT. Mizuho Leasing Indonesia Tbk',
-      period: '2024 — 2025',
-      description: 'Handled daily cash transactions, financial reconciliation, and data verification for leasing services.'
-    },
-    {
-      id: 'e3',
-      type: 'work',
-      title: 'Data Entry Specialist',
-      organization: 'Partai Persatuan Pembangunan (PPP)',
-      period: '2023 — 2024',
-      description: 'Managed data entry and validation for over 500,000 constituent records with high precision.'
-    },
-    {
-      id: 'e4',
-      type: 'intern',
-      title: 'UI/UX Development (Intern)',
-      organization: 'PT. Jagoan Hosting Indonesia',
-      period: '2023',
-      description: 'Designed user interfaces, analyzed user experience metrics, and created prototypes for web platforms.'
-    }
+    { id: 'e1', type: 'work', title: 'IT and Informatics Administration Coordinator', organization: 'SMP Islam Darussaadah Poncokusumo', period: '2024 — 2026', description: 'Coordinated IT administration, managed school database systems, and led digital academic reporting transformations.' },
+    { id: 'e2', type: 'work', title: 'Teller / Cashier', organization: 'PT. Mizuho Leasing Indonesia Tbk', period: '2024 — 2025', description: 'Handled daily cash transactions, financial reconciliation, and data verification for leasing services.' },
+    { id: 'e3', type: 'work', title: 'Data Entry Specialist', organization: 'Partai Persatuan Pembangunan (PPP)', period: '2023 — 2024', description: 'Managed data entry and validation for over 500,000 constituent records with high precision.' },
+    { id: 'e4', type: 'intern', title: 'UI/UX Development (Intern)', organization: 'PT. Jagoan Hosting Indonesia', period: '2023', description: 'Designed user interfaces, analyzed user experience metrics, and created prototypes for web platforms.' }
   ],
   education: [
-    {
-      id: 'ed1',
-      type: 'formal',
-      title: 'Bachelor of Computer Science in Information Systems',
-      organization: 'STMIK PPKIA Pradnya Paramita (STIMATA)',
-      period: 'Graduated 2024',
-      description: 'Graduated with GPA 3.77 / 4.00 (Cum Laude). Active as Treasurer at MPM STIMATA & HIPMIS STIMATA.'
-    }
+    { id: 'ed1', type: 'formal', title: 'Bachelor of Computer Science in Information Systems', organization: 'STMIK PPKIA Pradnya Paramita (STIMATA)', period: 'Graduated 2024', description: 'Graduated with GPA 3.77 / 4.00 (Cum Laude). Active as Treasurer at MPM STIMATA & HIPMIS STIMATA.' }
   ]
 };
 
@@ -2013,7 +1960,6 @@ function loadData() {
       return JSON.parse(JSON.stringify(defaultData));
     }
     const parsed = JSON.parse(raw);
-    // Auto-heal: ensure all new keys exist
     if (!parsed.bio) parsed.bio = defaultData.bio;
     if (!parsed.bio.logo) parsed.bio.logo = "";
     if (!parsed.bio.profileImage) parsed.bio.profileImage = "";
@@ -2030,10 +1976,69 @@ function loadData() {
   }
 }
 
-// Ganti fungsi saveData() dengan versi Firebase
+/* ============================================================
+   FIREBASE STORAGE & IMAGE COMPRESSION HANDLER
+   ============================================================ */
+function compressImage(file, maxSize = 800, quality = 0.7) {
+  return new Promise((resolve, reject) => {
+    if (!file.type.startsWith('image/')) {
+      resolve(file);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height && width > maxSize) {
+          height *= maxSize / width;
+          width = maxSize;
+        } else if (height > maxSize) {
+          width *= maxSize / height;
+          height = maxSize;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(blob => {
+          resolve(blob);
+        }, 'image/jpeg', quality);
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadToStorage(file, path) {
+  try {
+    const compressedBlob = await compressImage(file);
+    const storageRef = storage.ref(path);
+    const snapshot = await storageRef.put(compressedBlob);
+    const downloadURL = await snapshot.ref.getDownloadURL();
+    return downloadURL;
+  } catch (error) {
+    console.error("Error uploading to storage:", error);
+    toast('Gagal upload file ke Storage.', 'error');
+    return null;
+  }
+}
+
+/* ============================================================
+   FIRESTORE SAVE & LOAD (PROJECTS SEPARATED)
+   ============================================================ */
 async function saveData() {
   try {
-    await db.collection('portfolio').doc('mainData').set(DB);
+    const { projects, ...dataWithoutProjects } = DB;
+    await db.collection('portfolio').doc('mainData').set(dataWithoutProjects);
     localStorage.setItem(DB_KEY, JSON.stringify(DB));
     toast('Data saved to Cloud Database!', 'success');
   } catch (error) {
@@ -2042,15 +2047,17 @@ async function saveData() {
   }
 }
 
-// Tambahkan fungsi loadDataFromFirebase() tepat di bawahnya
 async function loadDataFromFirebase() {
   try {
     const doc = await db.collection('portfolio').doc('mainData').get();
     if (doc.exists) {
       DB = doc.data();
+      const projectsSnap = await db.collection('projects').get();
+      DB.projects = projectsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
     } else {
       DB = loadData();
-      saveData();
+      await db.collection('portfolio').doc('mainData').set(DB);
+      DB.projects.forEach(p => db.collection('projects').add(p));
     }
     renderPublic();
   } catch (error) {
@@ -2062,16 +2069,6 @@ async function loadDataFromFirebase() {
 
 function genId(prefix) {
   return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-}
-
-// Utility: Convert File to Base64
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
 }
 
 /* ============================================================
@@ -2140,14 +2137,10 @@ function renderPublic() {
   initChartBars();
 }
 
-/* ============================================================
-   RENDER LOGOS (Updated with Circular Styling)
-   ============================================================ */
 function renderLogos() {
   const navLogoMark = document.getElementById('navLogoMark');
   const favicon = document.getElementById('dynamicFavicon');
 
-  // Menambahkan gaya CSS global (sekali saja) agar semua gambar di dalam navLogoMark otomatis bulat
   const existingStyle = document.getElementById('logoCircularStyle');
   if (!existingStyle) {
     const style = document.createElement('style');
@@ -2156,33 +2149,21 @@ function renderLogos() {
       #navLogoMark img {
         width: 100%;
         height: 100%;
-        border-radius: 50%; /* MEMBUAT BULAT */
-        object-fit: cover; /* MEMASTIKAN GAMBAR PROPORSIONAL DAN PAS */
-        border: 2px solid var(--primary, #22d3ee); /* Tambahkan border primary sesuai tema */
-        padding: 2px; /* Memberi sedikit jarak antar border dan logo */
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--primary, #22d3ee);
+        padding: 2px;
       }
     `;
     document.head.appendChild(style);
   }
 
   if (DB.bio && DB.bio.logo) {
-    // Menampilkan logo dari Firebase
     navLogoMark.innerHTML = `<img src="${DB.bio.logo}" alt="AP Logo">`;
-    if (favicon) favicon.href = DB.bio.logo; // Mengubah Favicon
+    if (favicon) favicon.href = DB.bio.logo;
   } else {
-    // Tampilan default jika logo di Firebase belum diset
     navLogoMark.innerHTML = `
-      <div style="
-        width: 100%; 
-        height: 100%; 
-        background-color: var(--primary, #22d3ee); 
-        color: #050811; 
-        font-weight: 800; 
-        border-radius: 50%; 
-        display: flex; 
-        align-items: center; 
-        justify-content: center; 
-        border: 2px solid var(--primary, #22d3ee);">
+      <div style="width: 100%; height: 100%; background-color: var(--primary, #22d3ee); color: #050811; font-weight: 800; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--primary, #22d3ee);">
         AP
       </div>
     `;
@@ -2251,8 +2232,7 @@ function renderFilters() {
   const bar = document.getElementById('filterBar');
   if(!bar || !DB.projects) return;
   const cats = ['All', ...new Set(DB.projects.map(p => p.category))];
-  bar.innerHTML = cats.map((c, i) => ``
-  ).join('');
+  bar.innerHTML = cats.map((c, i) => ``).join('');
   bar.innerHTML = cats.map((c, i) => `
     <button class="filter-btn ${i === 0 ? 'active' : ''}" data-cat="${c}">${c}</button>
   `).join('');
@@ -2278,7 +2258,7 @@ function renderProjects(projects) {
     </div>`;
     return;
   }
-    grid.innerHTML = list.map(p => `
+  grid.innerHTML = list.map(p => `
     <article class="project-card reveal">
       <div class="project-thumb ${p.image ? 'has-image' : ''}" data-image="${escapeAttr(p.image)}" style="${p.image ? `background-image: linear-gradient(rgba(5,8,17,0.3), rgba(5,8,17,0.3)), url('${p.image}'); background-size: cover; background-position: center; cursor: pointer;` : ''}">
         <div class="project-category">${escapeHtml(p.category)}</div>
@@ -2366,7 +2346,7 @@ function renderContact() {
       <div class="contact-link-icon"><i class="fa-brands fa-tiktok"></i></div>
       <div><div class="label">TikTok</div><div class="value">Follow Me</div></div>
     </a>` : ''}
-        ${b.whatsapp ? `
+    ${b.whatsapp ? `
     <a href="${b.whatsapp.startsWith('http') ? b.whatsapp : 'https://wa.me/' + b.whatsapp.replace(/[^0-9]/g, '').replace(/^0/, '62')}" target="_blank" rel="noopener" class="contact-link">
       <div class="contact-link-icon"><i class="fa-brands fa-whatsapp"></i></div>
       <div><div class="label">WhatsApp</div><div class="value">Chat Me</div></div>
@@ -2399,7 +2379,6 @@ function initPublicInteractions() {
   const nav = document.getElementById('topnav');
   window.addEventListener('scroll', () => {
     if(nav) nav.classList.toggle('scrolled', window.scrollY > 30);
-    
     let current = '';
     const sections = document.querySelectorAll('section');
     sections.forEach(sec => {
@@ -2408,7 +2387,6 @@ function initPublicInteractions() {
         current = sec.getAttribute('id');
       }
     });
-    
     document.querySelectorAll('.nav-links .nav-link').forEach(a => {
       a.classList.remove('active');
       if (a.getAttribute('href') === `#${current}`) {
@@ -2424,7 +2402,6 @@ function initPublicInteractions() {
     });
   }
 
-    // Project Image Popup Click Listener
   document.addEventListener('click', (e) => {
     const thumb = e.target.closest('.project-thumb.has-image');
     if (thumb && thumb.dataset.image) {
@@ -2438,7 +2415,6 @@ function initPublicInteractions() {
     });
   });
   
-  // CV Download Logic
   const dlBtn = document.getElementById('downloadCvBtn');
   if(dlBtn) dlBtn.addEventListener('click', () => {
     if (DB.bio.cvFile) {
@@ -2450,7 +2426,7 @@ function initPublicInteractions() {
       document.body.removeChild(a);
       toast('CV downloaded successfully!', 'success');
     } else {
-      generateCV(); // Fallback to text file generation
+      generateCV();
     }
   });
   
@@ -2462,11 +2438,9 @@ function initPublicInteractions() {
       const email = document.getElementById('cfEmail').value.trim();
       const msg = document.getElementById('cfMessage').value.trim();
       if (!name || !email || !msg) return;
-      
       const submissions = JSON.parse(localStorage.getItem('appp_contact_submissions') || '[]');
       submissions.push({ name, email, msg, date: new Date().toISOString() });
       localStorage.setItem('appp_contact_submissions', JSON.stringify(submissions));
-      
       toast(`Message saved! I will reply to ${email} soon.`, 'success');
       e.target.reset();
     });
@@ -2479,7 +2453,6 @@ function initPublicInteractions() {
       window.location.hash = '#/admin';
     });
   }
-  
   document.addEventListener('click', (e) => {
     if (e.target.closest('#backToSite')) {
       e.preventDefault();
@@ -2547,7 +2520,6 @@ function initCounters() {
         let current = 0;
         const duration = 1500;
         const start = performance.now();
-        
         function step(now) {
           const elapsed = now - start;
           const progress = Math.min(elapsed / duration, 1);
@@ -2562,7 +2534,6 @@ function initCounters() {
       }
     });
   }, { threshold: 0.5 });
-  
   counters.forEach(c => observer.observe(c));
 }
 
@@ -2576,7 +2547,6 @@ function initRevealAnimations() {
       }
     });
   }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-  
   reveals.forEach(r => observer.observe(r));
 }
 
@@ -2589,14 +2559,12 @@ function initParticles() {
   const ctx = canvas.getContext('2d');
   let particles = [];
   let w, h;
-  
   function resize() {
     w = canvas.width = window.innerWidth;
     h = canvas.height = window.innerHeight;
   }
   resize();
   window.addEventListener('resize', resize);
-  
   const count = Math.min(60, Math.floor((w * h) / 25000));
   for (let i = 0; i < count; i++) {
     particles.push({
@@ -2607,7 +2575,6 @@ function initParticles() {
       r: Math.random() * 1.5 + 0.5
     });
   }
-  
   function draw() {
     ctx.clearRect(0, 0, w, h);
     for (let i = 0; i < particles.length; i++) {
@@ -2749,8 +2716,6 @@ function adminOverview() {
 
 function renderSubmissionsTable() {
   let subs = JSON.parse(localStorage.getItem('appp_contact_submissions') || '[]');
-  
-  // Filter based on search query
   if (subSearchQuery) {
     const q = subSearchQuery.toLowerCase();
     subs = subs.filter(s => 
@@ -2759,16 +2724,12 @@ function renderSubmissionsTable() {
       s.msg.toLowerCase().includes(q)
     );
   }
-  
-  // Sort based on selection
   subs.sort((a, b) => {
     const dateA = new Date(a.date).getTime();
     const dateB = new Date(b.date).getTime();
     return subSortOrder === 'newest' ? dateB - dateA : dateA - dateB;
   });
-  
   if (subs.length === 0) return `<div style="padding:40px;text-align:center;color:var(--text-3);">No submissions found.</div>`;
-  
   return `
     <table class="admin-table">
       <thead>
@@ -2808,24 +2769,12 @@ function renderSubmissionsTable() {
 
 function updateSubmissionsUI() {
   const container = document.getElementById('submissionsTableContainer');
-  if (container) {
-    container.innerHTML = renderSubmissionsTable();
-  }
+  if (container) container.innerHTML = renderSubmissionsTable();
 }
 
-function handleSubSearch(val) {
-  subSearchQuery = val;
-  updateSubmissionsUI();
-}
-
-function handleSubSort(val) {
-  subSortOrder = val;
-  updateSubmissionsUI();
-}
-
-function toggleSelectAllSubs(isChecked) {
-  document.querySelectorAll('.sub-checkbox').forEach(cb => cb.checked = isChecked);
-}
+function handleSubSearch(val) { subSearchQuery = val; updateSubmissionsUI(); }
+function handleSubSort(val) { subSortOrder = val; updateSubmissionsUI(); }
+function toggleSelectAllSubs(isChecked) { document.querySelectorAll('.sub-checkbox').forEach(cb => cb.checked = isChecked); }
 
 function toggleReadSubmission(dateStr, markRead) {
   let subs = JSON.parse(localStorage.getItem('appp_contact_submissions') || '[]');
@@ -2851,11 +2800,9 @@ function deleteSubmission(dateStr) {
 function handleBulkRead(markRead) {
   const checked = document.querySelectorAll('.sub-checkbox:checked');
   if (checked.length === 0) return toast('Select at least one message first.', 'error');
-  
   let subs = JSON.parse(localStorage.getItem('appp_contact_submissions') || '[]');
   const ids = Array.from(checked).map(cb => cb.value);
   subs.forEach(s => { if(ids.includes(s.date)) s.read = markRead; });
-  
   localStorage.setItem('appp_contact_submissions', JSON.stringify(subs));
   updateSubmissionsUI();
   toast(`${checked.length} messages marked as ${markRead ? 'read' : 'unread'}.`, 'success');
@@ -2864,7 +2811,6 @@ function handleBulkRead(markRead) {
 function handleBulkDelete() {
   const checked = document.querySelectorAll('.sub-checkbox:checked');
   if (checked.length === 0) return toast('Select messages to delete first.', 'error');
-  
   if(confirm(`Delete ${checked.length} selected messages?`)) {
     let subs = JSON.parse(localStorage.getItem('appp_contact_submissions') || '[]');
     const ids = Array.from(checked).map(cb => cb.value);
@@ -2885,8 +2831,6 @@ function adminProjects() {
       <table class="admin-table">
         <thead><tr><th>Title</th><th>Category</th><th>Actions</th></tr></thead>
         <tbody>
-          ${DB.projects.map(p => ``
-          ).join('')}
           ${DB.projects.map(p => `
             <tr data-id="${p.id}">
               <td><div class="row-title">${escapeHtml(p.title)}</div></td>
@@ -2915,8 +2859,6 @@ function adminExperience() {
       <table class="admin-table">
         <thead><tr><th>Title</th><th>Type</th><th>Period</th><th>Actions</th></tr></thead>
         <tbody>
-          ${DB.experience.map(t => ``
-          ).join('')}
           ${DB.experience.map(t => `
             <tr data-id="${t.id}">
               <td><div class="row-title">${escapeHtml(t.title)}</div><div class="row-sub">${escapeHtml(t.organization)}</div></td>
@@ -2946,8 +2888,6 @@ function adminEducation() {
       <table class="admin-table">
         <thead><tr><th>Title</th><th>Type</th><th>Period</th><th>Actions</th></tr></thead>
         <tbody>
-          ${DB.education.map(t => ``
-          ).join('')}
           ${DB.education.map(t => `
             <tr data-id="${t.id}">
               <td><div class="row-title">${escapeHtml(t.title)}</div><div class="row-sub">${escapeHtml(t.organization)}</div></td>
@@ -2977,8 +2917,6 @@ function adminSkills() {
       <table class="admin-table">
         <thead><tr><th>Skill Name</th><th>Category</th><th>Actions</th></tr></thead>
         <tbody>
-          ${DB.skills.map(s => ``
-          ).join('')}
           ${DB.skills.map(s => `
             <tr data-id="${s.id}">
               <td class="row-title">${escapeHtml(s.name)}</td>
@@ -3006,8 +2944,6 @@ function adminBio() {
     <form id="bioForm" class="admin-table-wrap" style="padding: 24px;">
       <h3 style="margin-bottom: 16px; color: var(--accent); font-family: var(--font-display);">Media Uploads</h3>
       <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; margin-bottom: 24px;">
-        
-        <!-- Logo Upload -->
         <div class="form-group">
           <label>Website Logo</label>
           <div class="file-upload-wrap">
@@ -3016,8 +2952,6 @@ function adminBio() {
           </div>
           <div class="file-name-preview" id="logoStatus">${b.logo ? 'Logo uploaded!' : 'No logo uploaded.'}</div>
         </div>
-        
-        <!-- Profile Photo Upload -->
         <div class="form-group">
           <label>About Me Photo</label>
           <div class="file-upload-wrap">
@@ -3026,8 +2960,6 @@ function adminBio() {
           </div>
           <div class="file-name-preview" id="profileStatus">${b.profileImage ? 'Photo uploaded!' : 'No photo uploaded.'}</div>
         </div>
-        
-        <!-- CV Upload -->
         <div class="form-group">
           <label>CV Document (PDF)</label>
           <div class="file-upload-wrap">
@@ -3036,9 +2968,7 @@ function adminBio() {
           </div>
           <div class="file-name-preview" id="cvStatus">${b.cvFile ? 'CV uploaded!' : 'No CV uploaded. Will fallback to text.'}</div>
         </div>
-        
       </div>
-
       <h3 style="margin-bottom: 16px; color: var(--accent); font-family: var(--font-display);">Bio Details</h3>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px;">
         <div class="form-group">
@@ -3093,26 +3023,40 @@ function adminBio() {
 function bindAdminActions() {
   const bioForm = document.getElementById('bioForm');
   if (bioForm) {
-    // Handle File Uploads Live Preview & State
     const logoInput = document.getElementById('bioLogoFile');
     const profileInput = document.getElementById('bioProfileFile');
     const cvInput = document.getElementById('bioCvFile');
 
     if(logoInput) logoInput.addEventListener('change', async (e) => {
       if(e.target.files[0]) {
-        DB.bio.logo = await fileToBase64(e.target.files[0]);
-        document.getElementById('logoStatus').innerText = 'Logo ready to save!';
+        document.getElementById('logoStatus').innerText = 'Uploading to Storage...';
+        const url = await uploadToStorage(e.target.files[0], 'bio/logo.jpg');
+        if (url) {
+          DB.bio.logo = url;
+          document.getElementById('logoStatus').innerText = 'Logo ready to save!';
+        }
       }
     });
+
     if(profileInput) profileInput.addEventListener('change', async (e) => {
       if(e.target.files[0]) {
-        DB.bio.profileImage = await fileToBase64(e.target.files[0]);
-        document.getElementById('profileStatus').innerText = 'Photo ready to save!';
+        document.getElementById('profileStatus').innerText = 'Uploading to Storage...';
+        const url = await uploadToStorage(e.target.files[0], 'bio/profile.jpg');
+        if (url) {
+          DB.bio.profileImage = url;
+          document.getElementById('profileStatus').innerText = 'Photo ready to save!';
+        }
       }
     });
+
     if(cvInput) cvInput.addEventListener('change', async (e) => {
       if(e.target.files[0]) {
-        DB.bio.cvFile = await fileToBase64(e.target.files[0]);
+        document.getElementById('cvStatus').innerText = 'Uploading PDF...';
+        const file = e.target.files[0];
+        const storageRef = storage.ref('bio/cv.pdf');
+        const snapshot = await storageRef.put(file);
+        const url = await snapshot.ref.getDownloadURL();
+        DB.bio.cvFile = url;
         document.getElementById('cvStatus').innerText = 'CV ready to save!';
       }
     });
@@ -3137,8 +3081,14 @@ function bindAdminActions() {
   const btnProj = document.getElementById('addProjectBtn');
   if(btnProj) btnProj.addEventListener('click', () => openProjectModal());
   document.querySelectorAll('.edit-project').forEach(b => b.addEventListener('click', () => openProjectModal(DB.projects.find(x => x.id === b.dataset.id))));
-  document.querySelectorAll('.delete-project').forEach(b => b.addEventListener('click', () => {
-    if(confirm('Delete project?')) { DB.projects = DB.projects.filter(x => x.id !== b.dataset.id); saveData(); renderAdmin('projects'); }
+  document.querySelectorAll('.delete-project').forEach(b => b.addEventListener('click', async () => {
+    if(confirm('Delete project?')) { 
+      const id = b.dataset.id;
+      await db.collection('projects').doc(id).delete();
+      DB.projects = DB.projects.filter(x => x.id !== id); 
+      renderAdmin('projects'); 
+      toast('Project deleted.', 'info');
+    }
   }));
 
   const btnExp = document.getElementById('addExpBtn');
@@ -3165,20 +3115,18 @@ function bindAdminActions() {
 
 function openModal(html) {
   const modal = document.getElementById('modal');
-  modal.removeAttribute('style'); // Reset styles for standard modals
+  modal.removeAttribute('style');
   modal.innerHTML = html;
   document.getElementById('modalOverlay').classList.add('active');
 }
 
 function closeModal() { 
   document.getElementById('modalOverlay').classList.remove('active'); 
-  // Reset modal styles when closing to keep standard modals working correctly
   document.getElementById('modal').removeAttribute('style'); 
 }
 
 function openImagePopup(src) {
   const modal = document.getElementById('modal');
-  // Override styles for image popup to make it larger and transparent
   modal.setAttribute('style', 'background: transparent; border: none; max-width: 90vw; box-shadow: none; overflow: visible;');
   modal.innerHTML = `
     <div style="position: relative; text-align: center;">
@@ -3193,13 +3141,12 @@ function openImagePopup(src) {
 
 function openProjectModal(p = null) {
   const isEdit = !!p;
-  const d = p || { title:'', category:'', summary:'', keyInsights:'', tools:[], link:'', image:'', icon:'fa-chart-line' };
+  const d = p || { title:'', category:'', summary:'', keyInsights:'', tools:[], link:'', image:'', embedLink:'', icon:'fa-chart-line' };
   openModal(`
     <div class="modal-head"><h3>${isEdit ? 'Edit Project' : 'New Project'}</h3><button class="modal-close"><i class="fa-solid fa-xmark"></i></button></div>
     <div class="modal-body">
       <div class="form-group"><label>Title</label><input type="text" id="pTitle" value="${escapeAttr(d.title)}"></div>
       <div class="form-group"><label>Category</label><input type="text" id="pCategory" value="${escapeAttr(d.category)}"></div>
-      
       <div class="form-group"><label>Project Banner Image</label>
         <div class="file-upload-wrap">
           <label class="file-upload-label"><i class="fa-solid fa-image"></i> ${d.image ? 'Change Image' : 'Upload Image'}</label>
@@ -3208,8 +3155,7 @@ function openProjectModal(p = null) {
         </div>
         <div class="file-name-preview" id="pImageStatus">${d.image ? 'Image uploaded!' : 'No image uploaded.'}</div>
       </div>
-      
-          <div class="form-group"><label>Summary</label><textarea id="pSummary">${escapeHtml(d.summary)}</textarea></div>
+      <div class="form-group"><label>Summary</label><textarea id="pSummary">${escapeHtml(d.summary)}</textarea></div>
       <div class="form-group"><label>Key Insights</label><textarea id="pKeyInsights" placeholder="E.g., Identified top 5 churn drivers...">${escapeHtml(d.keyInsights)}</textarea></div>
       <div class="form-group"><label>Tools (comma separated)</label><input type="text" id="pTools" value="${escapeAttr((d.tools||[]).join(', '))}"></div>
       <div class="form-group"><label>GitHub Link</label><input type="text" id="pLink" value="${escapeAttr(d.link)}"></div>
@@ -3218,16 +3164,19 @@ function openProjectModal(p = null) {
     <div class="modal-footer"><button class="btn btn-primary" id="saveProj">${isEdit ? 'Update' : 'Create'}</button></div>
   `);
   
-  // Bind image upload inside modal
   document.getElementById('pImageFile').addEventListener('change', async (e) => {
     if(e.target.files[0]) {
-      const base64 = await fileToBase64(e.target.files[0]);
-      document.getElementById('pImage').value = base64;
-      document.getElementById('pImageStatus').innerText = 'Image ready to save!';
+      document.getElementById('pImageStatus').innerText = 'Uploading image...';
+      const path = `projects/${Date.now()}_${e.target.files[0].name}`;
+      const url = await uploadToStorage(e.target.files[0], path);
+      if (url) {
+        document.getElementById('pImage').value = url;
+        document.getElementById('pImageStatus').innerText = 'Image ready to save!';
+      }
     }
   });
 
-    document.getElementById('saveProj').addEventListener('click', () => {
+  document.getElementById('saveProj').addEventListener('click', async () => {
     const payload = {
       title: document.getElementById('pTitle').value,
       category: document.getElementById('pCategory').value,
@@ -3238,8 +3187,22 @@ function openProjectModal(p = null) {
       link: document.getElementById('pLink').value,
       embedLink: document.getElementById('pEmbedLink').value
     };
-    if (isEdit) { Object.assign(d, payload); } else { DB.projects.push({id: genId('p'), ...payload}); }
-    saveData(); closeModal(); renderAdmin('projects');
+
+    try {
+      if (isEdit) { 
+        Object.assign(d, payload); 
+        await db.collection('projects').doc(d.id).set(payload, { merge: true });
+      } else { 
+        const docRef = await db.collection('projects').add(payload);
+        DB.projects.push({ id: docRef.id, ...payload });
+      }
+      toast('Project saved successfully!', 'success');
+      closeModal(); 
+      renderAdmin('projects');
+    } catch (error) {
+      console.error("Error saving project:", error);
+      toast('Failed to save project.', 'error');
+    }
   });
 }
 
