@@ -709,8 +709,9 @@
   
   .projects-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 380px));
     gap: 24px;
+    justify-content: center;
   }
   .project-card {
     background: var(--bg-card);
@@ -3218,8 +3219,11 @@ function openProjectModal(p = null) {
         <div class="file-name-preview" id="pImageStatus">${d.image ? 'Image uploaded!' : 'No image uploaded.'}</div>
       </div>
       
-      <div class="form-group"><label>Summary</label><textarea id="pSummary">${escapeHtml(d.summary)}</textarea></div>
+          <div class="form-group"><label>Summary</label><textarea id="pSummary">${escapeHtml(d.summary)}</textarea></div>
+      <div class="form-group"><label>Key Insights</label><textarea id="pKeyInsights" placeholder="E.g., Identified top 5 churn drivers...">${escapeHtml(d.keyInsights)}</textarea></div>
       <div class="form-group"><label>Tools (comma separated)</label><input type="text" id="pTools" value="${escapeAttr((d.tools||[]).join(', '))}"></div>
+      <div class="form-group"><label>GitHub Link</label><input type="text" id="pLink" value="${escapeAttr(d.link)}"></div>
+      <div class="form-group"><label>Live Demo Link (Optional)</label><input type="text" id="pEmbedLink" value="${escapeAttr(d.embedLink)}"></div>
     </div>
     <div class="modal-footer"><button class="btn btn-primary" id="saveProj">${isEdit ? 'Update' : 'Create'}</button></div>
   `);
@@ -3233,13 +3237,16 @@ function openProjectModal(p = null) {
     }
   });
 
-  document.getElementById('saveProj').addEventListener('click', () => {
+    document.getElementById('saveProj').addEventListener('click', () => {
     const payload = {
       title: document.getElementById('pTitle').value,
       category: document.getElementById('pCategory').value,
       image: document.getElementById('pImage').value,
       summary: document.getElementById('pSummary').value,
-      tools: document.getElementById('pTools').value.split(',').map(x=>x.trim()).filter(Boolean)
+      keyInsights: document.getElementById('pKeyInsights').value,
+      tools: document.getElementById('pTools').value.split(',').map(x=>x.trim()).filter(Boolean),
+      link: document.getElementById('pLink').value,
+      embedLink: document.getElementById('pEmbedLink').value
     };
     if (isEdit) { Object.assign(d, payload); } else { DB.projects.push({id: genId('p'), ...payload}); }
     saveData(); closeModal(); renderAdmin('projects');
